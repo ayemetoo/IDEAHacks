@@ -9,7 +9,7 @@
 #define CE 9
 
 Adafruit_HTU21DF htu = Adafruit_HTU21DF(); //temp sensor
-//RF24 rf(CE, CSN); //radio module
+RF24 rf(CE, CSN); //radio module
 
 struct tempHumd {
   float temp;
@@ -17,12 +17,12 @@ struct tempHumd {
 } outside;
 
 void setup() {
-//  rf.begin();
-//  rf.setChannel(5);
-//  rf.setPALevel(RF24_PA_MIN);
-//  rf.openWritingPipe(0xe7e7e7e7e7);
-//  rf.openReadingPipe(1, 0xc2c2c2c2c2);
-//  rf.setCRCLength(RF24_CRC_16);
+  rf.begin();
+  rf.setChannel(5);
+  rf.setPALevel(RF24_PA_MIN);
+  rf.openWritingPipe(0xe7e7e7e7e7);
+  rf.openReadingPipe(1, 0xc2c2c2c2c2);
+  rf.setCRCLength(RF24_CRC_16);
   
   Serial.begin(9600);
   Serial.println("HTU21D-F test");
@@ -40,9 +40,9 @@ void loop() {
   outside.humd = htu.readHumidity();
   
 //  //transmit to arduino
-//  rf.stopListening();
-//  int status = rf.write(&outside, 2 * sizeof(float));
-//  Serial.println(status);
+  rf.stopListening();
+  int status = rf.write(&outside, 2 * sizeof(float));
+  Serial.println(status);
   
   Serial.println("Outside--------");
   Serial.print("Temp: "); Serial.print(outside.temp);
