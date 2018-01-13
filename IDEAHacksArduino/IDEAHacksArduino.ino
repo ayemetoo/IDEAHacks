@@ -1,13 +1,3 @@
-/*************************************************** 
-  This is an example for the HTU21D-F Humidity & Temp Sensor
-
-  Designed specifically to work with the HTU21D-F sensor from Adafruit
-  ----> https://www.adafruit.com/products/1899
-
-  These displays use I2C to communicate, 2 pins are required to  
-  interface
- ****************************************************/
-
 #include <Wire.h>
 #include "Adafruit_HTU21DF.h"
 #include <nRF24L01.h>
@@ -18,11 +8,6 @@
 #define CSN 10
 #define CE 9
 
-// Connect Vin to 3-5VDC
-// Connect GND to ground
-// Connect SCL to I2C clock pin (A5 on UNO)
-// Connect SDA to I2C data pin (A4 on UNO)
-
 Adafruit_HTU21DF htu = Adafruit_HTU21DF(); //temp sensor
 //RF24 rf(CE, CSN); //radio module
 
@@ -30,6 +15,8 @@ struct tempHumd {
   float temp;
   float humd;  
 } inside, outside, pInside, pOutside;
+
+int target = 70;
 
 void setup() {
 //  rf.setChannel(5);
@@ -71,3 +58,22 @@ void loop() {
 float CtoF(float celcius) {
   return celcius*1.8 + 32;  
 }
+
+bool checkTemp(float inside, float outside) {
+  float tempDiff, tempDiffIn, tempDiffOut;
+  tempDiff = outside - inside;
+  tempDiffIn = inside - target; //pos = hotter, neg = cooler
+  tempDiffOut = outside - target; //pos = hotter, neg = cooler
+  //diff bigger than 2 degrees
+  if (tempDiff > 2 || tempDiff < -2) {
+      //if tempDiffIn > 0 && tempDiffOut < 0 --> open
+      //if tempDiffIn > 0 && tempDiffOut > 0
+        //if inside more humid --> open
+        //else --> close
+      //if tempDiffIn < 0 && tempDiffOut < 0 --> close? or open if outside is more humid?
+      //if tempDiffIn < 0 && tempDiffOut > 0 --> open
+  }
+}
+
+//void open --> open window
+//void close --> close window
