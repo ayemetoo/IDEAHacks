@@ -31,14 +31,14 @@ Servo myservo; //servo
 
 struct tempHumd {
   float temp;
-  float humd;  
+  float humd;
+  int hi;
 } inside, outside, pInside, pOutside;
 
 int target = 70;
 int opened = 0;
 int targethumd = 20;
 int pPressed = 1, auto_mode = 1;
-char linebuf[11];
 
 void setup() {
 
@@ -79,8 +79,8 @@ void loop() {
     rf.read(&outside, sizeof(float)*2);  
   }
 
-  inside.temp = heatIndex(inside.temp, inside.humd);
-  outside.temp = heatIndex(outside.temp, outside.humd);
+  inside.temp = heatIndex(&inside);
+  outside.temp = heatIndex(&outside);
   
   Serial.println("Inside--------");
   Serial.print("Temp: "); Serial.print(inside.temp);
@@ -130,12 +130,16 @@ void checkTemp() {
   // maybe weight both temp and humd to make a decision?
 }
 
-float heatIndex(float temp, float humd){
+float heatIndex(struct tempHumd *th){
+  float temp = th->temp;
+  float humd = th->humd;
   if (temp > 80 && humd > 40) {
+    th->hi = 1;
     return -42.379 + 2.04901523*temp + 10.14333127*humd + -0.22477541*temp*humd
     + -0.00683783*temp*temp + -0.05481717*humd*humd + 0.00122874*temp*temp*humd
-    + 0.00085282*temp*humd*humd + -0.0000199*temp*temp*humd*humd;
-  } else { 
+    + 0.00085282*temp*humd*humd + -0.00000199*temp*temp*humd*humd;
+  } else {
+    th->hi = 0;
     return temp;
   }
 }
@@ -161,8 +165,23 @@ void closewindow(){
 
 //prints a line of values "TTT°F HHH%"
 void printValues(struct tempHumd *th){
-  sprintf(linebuf, "%3d%cF %3d%%\n",(int)th->temp,(char)247, (int) th->humd);
-  display.print(linebuf);
+  String line = String((int)th->temp);
+  while(line.length()<3)
+    line = " "+line;
+  line += (char)247;
+  line += "F";
+  if(th->hi){
+    line += "*";
+  }else{
+    line += " ";
+  }
+  String h = String((int) th->humd);
+  while(h.length()<3)
+    h = " "+h;
+  line += h;
+  line += "%\n";
+  
+  display.print(line);
 }
 
 void showReadings(){
