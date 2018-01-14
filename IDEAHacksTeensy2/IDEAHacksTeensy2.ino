@@ -51,6 +51,9 @@ void loop() {
   if (rf.available()) {
     rf.read(&outside, sizeof(float)*2);  
   }
+
+  inside.temp = heatIndex(inside.temp, inside.humd);
+  outside.temp = heatIndex(outside.temp, outside.humd);
   
   Serial.println("Inside--------");
   Serial.print("Temp: "); Serial.print(inside.temp);
