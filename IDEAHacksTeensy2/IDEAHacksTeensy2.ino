@@ -59,7 +59,7 @@ void loop() {
   Serial.println("Outside--------");
   Serial.print("Temp: "); Serial.print(outside.temp);
   Serial.print("\t\tHum: "); Serial.println(outside.humd);
-  checkTemp(inside.temp, outside.temp);
+  checkTemp();
   delay(1000);
 }
 
@@ -67,7 +67,7 @@ float CtoF(float celcius) {
   return celcius*1.8 + 32;  
 }
 
-void checkTemp(float inside, float outside) {
+void checkTemp() {
   float tempDiff, tempDiffIn, tempDiffOut;
   tempDiff = outside.temp - inside.temp;
   tempDiffIn = inside.temp - target; //pos = hotter, neg = cooler
@@ -75,6 +75,9 @@ void checkTemp(float inside, float outside) {
   humdDiff = outside.humd - inside.humd;
   humdDiffIn = inside.humd - targethumd; 
   humdDiffOut = outside.humd - targethumd;
+
+//  diffSumIn = tempDiffIn+0.1*humdDiffIn;
+//  diffSumOut = tempDiffOut+0.1*humdDiffOut;
   //diff bigger than 2 degrees
   if (abs(tempDiff) > 2) {
       if(abs(tempDiffIn) > abs(tempDiffOut)){
@@ -93,6 +96,15 @@ void checkTemp(float inside, float outside) {
   // maybe weight both temp and humd to make a decision?
 }
 
+void test(){
+  
+  total_err = humd_err + temp_err;
+}
+
+float heatIndex(float temp, float humd){
+  return -42.379 + 2.04901523*temp + 10.14333127*humd + -0.22477541*temp*humd
+  + -0.00683783*temp*temp + -0.05481717*humd*humd;
+}
 
 void openwindow(){
   if(!opened){
