@@ -20,6 +20,7 @@ struct tempHumd {
 
 int target = 70;
 int opened = 0;
+int targethumd = 20;
 
 void setup() {
   rf.begin();
@@ -59,7 +60,7 @@ void loop() {
   Serial.print("Temp: "); Serial.print(outside.temp);
   Serial.print("\t\tHum: "); Serial.println(outside.humd);
   checkTemp(inside.temp, outside.temp);
-  delay(3000);
+  delay(1000);
 }
 
 float CtoF(float celcius) {
@@ -68,39 +69,46 @@ float CtoF(float celcius) {
 
 void checkTemp(float inside, float outside) {
   float tempDiff, tempDiffIn, tempDiffOut;
-  tempDiff = outside - inside;
-  tempDiffIn = inside - target; //pos = hotter, neg = cooler
-  tempDiffOut = outside - target; //pos = hotter, neg = cooler
+  tempDiff = outside.temp - inside.temp;
+  tempDiffIn = inside.temp - target; //pos = hotter, neg = cooler
+  tempDiffOut = outside.temp - target; //pos = hotter, neg = cooler
+  humdDiff = outside.humd - inside.humd;
+  humdDiffIn = inside.humd - targethumd; 
+  humdDiffOut = outside.humd - targethumd;
   //diff bigger than 2 degrees
-  if (tempDiff > 2 || tempDiff < -2) {
+  if (abs(tempDiff) > 2) {
       if(abs(tempDiffIn) > abs(tempDiffOut)){
-        if(!opened)
-          openwindow();
-        Serial.println("opened");
-        opened = 1;
+        openwindow();
       }
       else{
-        if(opened)
-          closewindow();
-        Serial.println("closed");
-        opened = 0;
+        closewindow();
       }
-//      if tempDiffIn > 0 && tempDiffOut > 0
-//        if inside more humid --> open
-//        else --> close
-//      if(tempDiffIn < 0 && tempDiffOut < 0 )--> close? or open if outside is more humid?
-//      if tempDiffIn < 0 && tempDiffOut > 0 --> open
+  } else if(abs(humdDiff) > 20){
+    if(abs(humdDiffIn) > abs(humdDiffOut)){
+        openwindow();
+    }else{
+        closewindow();
+    }
   }
+  // maybe weight both temp and humd to make a decision?
 }
 
 
 void openwindow(){
-  myservo.write(70);
-  delay(500);
-  myservo.write(90);
+  if(!opened){
+    myservo.write(70);
+    delay(500);
+    myservo.write(90);
+  }
+  Serial.println("opened");
+  opened = 1;
 }
 void closewindow(){
-  myservo.write(110);
-  delay(500);
-  myservo.write(90);
+  if(opened){
+    myservo.write(110);
+    delay(500);
+    myservo.write(90);
+  }
+  Serial.println("closed");
+  opened = 0;
 }
