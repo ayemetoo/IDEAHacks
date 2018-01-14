@@ -98,8 +98,12 @@ void checkTemp() {
 }
 
 float heatIndex(float temp, float humd){
-  return -42.379 + 2.04901523*temp + 10.14333127*humd + -0.22477541*temp*humd
-  + -0.00683783*temp*temp + -0.05481717*humd*humd;
+  if (temp > 80 && humd > 40) {
+    return -42.379 + 2.04901523*temp + 10.14333127*humd + -0.22477541*temp*humd
+    + -0.00683783*temp*temp + -0.05481717*humd*humd;
+  } else { 
+    return temp;
+  }
 }
 
 void openwindow(){
