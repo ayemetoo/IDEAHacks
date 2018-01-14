@@ -7,7 +7,7 @@
 
 #define CSN 10
 #define CE 9
-#define Button 8
+//#define Button 8
 
 Adafruit_HTU21DF htu = Adafruit_HTU21DF(); //temp sensor
 RF24 rf(CE, CSN); //radio module
@@ -31,21 +31,21 @@ void setup() {
     while (1);
   }
 
-  pinMode(Button, INPUT);
+//  pinMode(Button, INPUT);
 }
 
-int pPressed = 0;
-bool mode = true; //1 on, off 
+//int pPressed = 0;
+//bool mode = true; //1 on, off 
 
 void loop() {
   //set struct
   outside.temp = CtoF(htu.readTemperature());
   outside.humd = htu.readHumidity();
   
-//  //transmit to arduino
+  //transmit to arduino
   rf.stopListening();
   int status = rf.write(&outside, 2 * sizeof(float));
-  checkButton();
+//  checkButton();
   
   printDetails(status, &outside);
   delay(1000);
@@ -57,18 +57,19 @@ float CtoF(float celcius) {
 
 void printDetails(int status, struct tempHumd *th) {
   Serial.print("Radio status: "); Serial.println(status);
-  Serial.print("Mode: "); Serial.println(mode);
-  Serial.println("Outside------------------------");
+  Serial.println("");
+  Serial.println("Outside---------------------------");
   Serial.print("Temp: "); Serial.print(th->temp);
   Serial.print("\t\tHum: "); Serial.println(th->humd);
+  Serial.println("");
 }
 
-void checkButton() {
-    if (digitalRead(Button) == HIGH && pPressed == 0) {
-    Serial.println("BUTTON");
-    pPressed = 1;
-    mode = !mode;
-  } else if (digitalRead(Button) == LOW) {
-    pPressed = 0;  
-  }  
-}
+//void checkButton() {
+//    if (digitalRead(Button) == HIGH && pPressed == 0) {
+//    Serial.println("BUTTON");
+//    pPressed = 1;
+//    mode = !mode;
+//  } else if (digitalRead(Button) == LOW) {
+//    pPressed = 0;  
+//  }  
+//}
