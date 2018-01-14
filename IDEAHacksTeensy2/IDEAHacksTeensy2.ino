@@ -5,9 +5,23 @@
 #include <printf.h>
 #include <RF24.h>
 #include <RF24_config.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
 
 #define CSN 10
 #define CE 9
+
+// If using software SPI (the default case):
+#define OLED_MOSI   7
+#define OLED_CLK   6
+#define OLED_DC    0
+#define OLED_CS    1
+#define OLED_RESET 20
+Adafruit_SSD1306 display(OLED_MOSI, OLED_CLK, OLED_DC, OLED_RESET, OLED_CS);
+
+#if (SSD1306_LCDHEIGHT != 64)
+#error("Height incorrect, please fix Adafruit_SSD1306.h!");
+#endif
 
 Adafruit_HTU21DF htu = Adafruit_HTU21DF(); //temp sensor
 RF24 rf(CE, CSN); //radio module
@@ -23,6 +37,20 @@ int opened = 0;
 int targethumd = 20;
 
 void setup() {
+
+  // by default, we'll generate the high voltage from the 3.3v line internally! (neat!)
+  display.begin(SSD1306_SWITCHCAPVCC);
+  // init done
+  
+  // Show image buffer on the display hardware.
+  // Since the buffer is intialized with an Adafruit splashscreen
+  // internally, this will display the splashscreen.
+  display.display();
+  delay(2000);
+
+  // Clear the buffer.
+  display.clearDisplay();
+  
   rf.begin();
   rf.setChannel(5);
   rf.setPALevel(RF24_PA_MIN);
@@ -51,7 +79,6 @@ void loop() {
   if (rf.available()) {
     rf.read(&outside, sizeof(float)*2);  
   }
-  
   Serial.println("Inside--------");
   Serial.print("Temp: "); Serial.print(inside.temp);
   Serial.print("\t\tHum: "); Serial.println(inside.humd);
@@ -60,7 +87,10 @@ void loop() {
   Serial.print("Temp: "); Serial.print(outside.temp);
   Serial.print("\t\tHum: "); Serial.println(outside.humd);
   checkTemp();
+  
+  showReadings();
   delay(1000);
+  display.clearDisplay();
 }
 
 float CtoF(float celcius) {
@@ -120,3 +150,29 @@ void closewindow(){
   Serial.println("closed");
   opened = 0;
 }
+
+void showReadings(){
+  display.setTextSize(2);
+  display.setTextColor(WHITE);
+  display.setCursor(0,0);
+  display.clearDisplay();
+  
+  display.println("Inside: ");
+  display.print(' ');
+  display.print((int) inside.temp);
+  display.print((char)247);
+  display.print("F ");
+  display.print((int) inside.humd);
+  display.println("%");
+  
+  display.println("Outside: ");
+  display.print(' ');
+  display.print((int)outside.temp);
+  display.print((char)247);
+  display.print("F ");
+  display.print((int) outside.humd);
+  display.println("%");
+  
+  display.display();
+}
+
