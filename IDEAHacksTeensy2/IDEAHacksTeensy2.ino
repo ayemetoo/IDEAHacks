@@ -7,6 +7,8 @@
 #include <RF24_config.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
+#include "Keypad.h"
+#include "artwork.h"
 
 #define CSN 10
 #define CE 9
@@ -18,6 +20,20 @@
 #define OLED_CS    1
 #define OLED_RESET 20
 Adafruit_SSD1306 display(OLED_MOSI, OLED_CLK, OLED_DC, OLED_RESET, OLED_CS);
+
+//button matrix
+const byte ROWS = 4; //four rows
+const byte COLS = 3; //three columns
+char keys[ROWS][COLS] = {
+  {'1','2','3'},
+  {'4','5','6'},
+  {'7','8','9'},
+  {'*','0','#'}
+};
+byte rowPins[ROWS] = {2, 3, 4, 5}; //connect to the row pinouts of the keypad
+byte colPins[COLS] = {23, 22, 21}; //connect to the column pinouts of the keypad
+
+Keypad kpd = Keypad( makeKeymap(keys), rowPins, colPins, ROWS, COLS );
 
 #if (SSD1306_LCDHEIGHT != 64)
 #error("Height incorrect, please fix Adafruit_SSD1306.h!");
@@ -77,23 +93,37 @@ void loop() {
   rf.startListening();
   if (rf.available()) {
     rf.read(&outside, sizeof(float)*2);  
+    inside.temp = heatIndex(&inside);
+    outside.temp = heatIndex(&outside);
+    
+    Serial.println("Inside--------");
+    Serial.print("Temp: "); Serial.print(inside.temp);
+    Serial.print("\t\tHum: "); Serial.println(inside.humd);
+  
+    Serial.println("Outside--------");
+    Serial.print("Temp: "); Serial.print(outside.temp);
+    Serial.print("\t\tHum: "); Serial.println(outside.humd);
+    if(auto_mode)
+      checkTemp();
+    
+    showReadings();
   }
-
-  inside.temp = heatIndex(&inside);
-  outside.temp = heatIndex(&outside);
-  
-  Serial.println("Inside--------");
-  Serial.print("Temp: "); Serial.print(inside.temp);
-  Serial.print("\t\tHum: "); Serial.println(inside.humd);
-
-  Serial.println("Outside--------");
-  Serial.print("Temp: "); Serial.print(outside.temp);
-  Serial.print("\t\tHum: "); Serial.println(outside.humd);
-  if(auto_mode)
-    checkTemp();
-  
-  showReadings();
-  delay(1000);
+  char key = kpd.getKey();
+  if(key)  // Check for a valid key.
+  {
+    switch (key)
+    {
+      case '*':
+        changeVal(0);
+        break;
+      case '#':
+        changeVal(1);
+        break;
+      default:
+        break;
+    }
+  }
+  delay(100);
 }
 
 float CtoF(float celcius) {
@@ -208,3 +238,60 @@ void checkButton() {
     pPressed = 0;  
   }
 }
+
+//i = 0 for temp, i = 1 for humd
+void changeVal(int id){
+  int loop = 1;
+  int count = 0;
+  String newval = "";
+  while(loop){
+    display.setTextSize(2);
+    display.setTextColor(WHITE);
+    display.setCursor(0,0);
+    display.clearDisplay();
+    if(id == 0)
+      display.println("New Temp:");
+    else
+      display.println("New Humd:");
+    display.println(newval);
+    display.display();
+    char key = kpd.getKey();
+    if(key)  // Check for a valid key.
+    {
+      switch (key)
+      {
+        case '*':
+          loop = 0;
+          break;
+        case '#':
+          count--;
+          newval.remove(count);
+          break;
+        default:
+          if(count<3){
+            newval += key;
+            count++;
+          }
+          break;
+      }
+    }
+    delay(100);
+  }
+  int conv = newval.toInt();
+  if(count != 0){
+    if(id == 0)
+      target = conv;
+    else if(conv <= 100)
+      targethumd = conv;
+    else
+      showArt();
+  }
+}
+
+void showArt(){
+  display.clearDisplay();
+  display.drawBitmap(0, 0, bestArtEver, 128, 64, WHITE);
+  display.display();
+  delay(500);
+}
+
