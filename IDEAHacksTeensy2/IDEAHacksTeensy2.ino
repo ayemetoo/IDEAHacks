@@ -23,6 +23,8 @@ Adafruit_SSD1306 display(OLED_MOSI, OLED_CLK, OLED_DC, OLED_RESET, OLED_CS);
 #error("Height incorrect, please fix Adafruit_SSD1306.h!");
 #endif
 
+#define Button 8
+
 Adafruit_HTU21DF htu = Adafruit_HTU21DF(); //temp sensor
 RF24 rf(CE, CSN); //radio module
 Servo myservo; //servo
@@ -35,6 +37,8 @@ struct tempHumd {
 int target = 70;
 int opened = 0;
 int targethumd = 20;
+int pPressed = 1, auto_mode = 1;
+char linebuf[11];
 
 void setup() {
 
@@ -46,19 +50,14 @@ void setup() {
   // Since the buffer is intialized with an Adafruit splashscreen
   // internally, this will display the splashscreen.
   display.display();
-  delay(2000);
-
-  // Clear the buffer.
-  display.clearDisplay();
   
   rf.begin();
   rf.setChannel(5);
   rf.setPALevel(RF24_PA_MIN);
-  rf.openWritingPipe(0xc2c2c2c2c2); //what do i put here
   rf.openReadingPipe(1, 0xe7e7e7e7e7);
   rf.setCRCLength(RF24_CRC_16);
   
-  
+  pinMode(Button, INPUT);
   Serial.begin(9600);
   
   if (!htu.begin()) {
@@ -90,11 +89,11 @@ void loop() {
   Serial.println("Outside--------");
   Serial.print("Temp: "); Serial.print(outside.temp);
   Serial.print("\t\tHum: "); Serial.println(outside.humd);
-  checkTemp();
+  if(auto_mode)
+    checkTemp();
   
   showReadings();
   delay(1000);
-  display.clearDisplay();
 }
 
 float CtoF(float celcius) {
@@ -134,7 +133,8 @@ void checkTemp() {
 float heatIndex(float temp, float humd){
   if (temp > 80 && humd > 40) {
     return -42.379 + 2.04901523*temp + 10.14333127*humd + -0.22477541*temp*humd
-    + -0.00683783*temp*temp + -0.05481717*humd*humd;
+    + -0.00683783*temp*temp + -0.05481717*humd*humd + 0.00122874*temp*temp*humd
+    + 0.00085282*temp*humd*humd + -0.0000199*temp*temp*humd*humd;
   } else { 
     return temp;
   }
@@ -159,28 +159,32 @@ void closewindow(){
   opened = 0;
 }
 
+//prints a line of values "TTT°F HHH%"
+void printValues(struct tempHumd *th){
+  sprintf(linebuf, "%3d%cF %3d%%\n",(int)th->temp,(char)247, (int) th->humd);
+  display.print(linebuf);
+}
+
 void showReadings(){
   display.setTextSize(2);
   display.setTextColor(WHITE);
   display.setCursor(0,0);
   display.clearDisplay();
   
-  display.println("Inside: ");
-  display.print(' ');
-  display.print((int) inside.temp);
-  display.print((char)247);
-  display.print("F ");
-  display.print((int) inside.humd);
-  display.println("%");
-  
-  display.println("Outside: ");
-  display.print(' ');
-  display.print((int)outside.temp);
-  display.print((char)247);
-  display.print("F ");
-  display.print((int) outside.humd);
-  display.println("%");
+  display.println("Inside:");
+  printValues(&inside);
+  display.println("Outside:");
+  printValues(&outside);
   
   display.display();
 }
 
+void checkButton() {
+    if (digitalRead(Button) == HIGH && pPressed == 0) {
+    Serial.println("BUTTON");
+    pPressed = 1;
+    auto_mode = !auto_mode;
+  } else if (digitalRead(Button) == LOW) {
+    pPressed = 0;  
+  }
+}
