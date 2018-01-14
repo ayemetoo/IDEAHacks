@@ -69,6 +69,7 @@ float CtoF(float celcius) {
 
 void checkTemp() {
   float tempDiff, tempDiffIn, tempDiffOut;
+  float humdDiff, humdDiffIn, humdDiffOut;
   tempDiff = outside.temp - inside.temp;
   tempDiffIn = inside.temp - target; //pos = hotter, neg = cooler
   tempDiffOut = outside.temp - target; //pos = hotter, neg = cooler
@@ -94,11 +95,6 @@ void checkTemp() {
     }
   }
   // maybe weight both temp and humd to make a decision?
-}
-
-void test(){
-  
-  total_err = humd_err + temp_err;
 }
 
 float heatIndex(float temp, float humd){
