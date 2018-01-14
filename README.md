@@ -1,7 +1,7 @@
 # IDEAHacks
 
 ## SmartWindow
-The SmartWindow is an automated window system that keeps a window opened or closed depending on the temperatures and humidities outside and inside a room. The user can also check the outside and inside values via an OLED display, as well as toggle the window system on and off.
+The SmartWindow is an automated air regulation system that employs natural differences in temperature and humidity. The user can also check the outside and inside values via an OLED display, as well as toggle the window system on and off.
 
 ### Components
 * [Teensy LC](https://www.pjrc.com/teensy/teensyLC.html), 2
