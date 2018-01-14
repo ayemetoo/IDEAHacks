@@ -47,7 +47,7 @@ void loop() {
   Serial.println("Outside--------");
   Serial.print("Temp: "); Serial.print(outside.temp);
   Serial.print("\t\tHum: "); Serial.println(outside.humd);
-  delay(3000);
+  delay(1000);
 }
 
 float CtoF(float celcius) {
