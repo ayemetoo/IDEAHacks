@@ -130,6 +130,7 @@ void checkTemp() {
   // maybe weight both temp and humd to make a decision?
 }
 
+// Approximation Formula: https://en.wikipedia.org/wiki/Heat_index
 float heatIndex(struct tempHumd *th){
   float temp = th->temp;
   float humd = th->humd;
