@@ -17,11 +17,11 @@ The SmartWindow is an automated air regulation system that employs natural diffe
 ### Functionality
 The SmartWindow makes its decision on whether or not to open the window based on the temperature first, then the humidity. [IDEAHacksTeensy.ino](https://github.com/ayemetoo/IDEAHacks/blob/master/IDEAHacksTeensy/IDEAHacksTeensy.ino) is used on the outside Teensy and sensor system, while [IDEAHacksTeensy2.ino](https://github.com/ayemetoo/IDEAHacks/blob/master/IDEAHacksTeensy2/IDEAHacksTeensy2.ino) is used on the inside Teensy and sensor system. The SmartWindow default is set to attempt to maintain a target temperature of 70 degrees Fahrenheit and target humidity of 20 percent; these targets can be changed via the matrix numpad. 
 
-### Modifying the Target Temperature and Humidity
+#### Modifying the Target Temperature and Humidity
 To put the system in select mode, hit on the numpad '**\***' to change the temperature or '**#**' to change the humidity. The display should change to show you the numbers you are entering. 
 If you made a mistake and wish to undo a digit, press '**#**'. When done entering, press '**\***'. 
 
-#### Notes
+### Notes
 * The system starts in an *on* state
 * You can only enter up to three digits when selecting the new target temperature or humidity
 * Values for humidity above 100 will be ignored...you can't have over 100% humidity after all!
